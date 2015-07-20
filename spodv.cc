@@ -60,6 +60,7 @@
 #include "ns3/wifi-80211p-helper.h"
 #include "ns3/wave-mac-helper.h"
 #include "ns3/on-off-helper.h"
+#include "ns3/bulk-send-helper.h"
 #include "SpodvHelper.h"
 #include "SpodvRouting.h"
 
@@ -229,9 +230,15 @@ SpodvExample::InstallInternetStack ()
 void
 SpodvExample::InstallApplications ()
 {
-  OnOffHelper onOff ("ns3::UdpSocketFactory", interfaces.GetAddress (size -1));
-
-  ApplicationContainer p = onOff.Install (nodes.Get (0));
+  /*OnOffHelper onOff ("ns3::UdpSocketFactory", interfaces.GetAddress (size -1));
+  onOff.SetAttribute("DataRate", DataRateValue(512 * 4));
+  onOff.SetAttribute("PacketSize", UintegerValue(512));*/
+  BulkSendHelper bulk ("ns3::TcpSocketFactory", interfaces.GetAddress (size-1));
+  bulk.SetAttribute("MaxBytes", UintegerValue(512));
+  ApplicationContainer p;
+  for (int i = 0; i < 7; i++) {
+     p.Add(bulk.Install (nodes.Get (i)));
+  }
   p.Start (Seconds (initTime));
   p.Stop (Seconds (totalTime) - Seconds (0.001));
 }
